@@ -14,7 +14,7 @@
   ];
 
   services = {
-    # matrix-synapse.enable = true;
+    matrix-synapse.enable = true;
     nginx.enable = true;
   };
 }
