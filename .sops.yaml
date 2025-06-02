@@ -1,0 +1,11 @@
+keys:
+  - &host_cx22 TODO
+  - &user_sid TODO
+  - &user_steffen TODO
+creation_rules:
+  - path_regex: hosts/cx22/secrets.yaml$
+    key_groups:
+    - age:
+      - *host_cx22
+      - *user_sid
+      - *user_steffen
