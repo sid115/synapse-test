@@ -13,10 +13,12 @@ in
       enable = true;
       no-cli = true;
       no-tcp-relay = true;
-      min-port = 49000;
-      max-port = 50000;
+      min-port = 49152;
+      max-port = 65535;
       listening-port = 3478;
+      alt-listening-port = coturn.listening-port + 1;
       tls-listening-port = 5349;
+      alt-tls-listening-port = coturn.tls-listening-port + 1;
       use-auth-secret = true;
       static-auth-secret-file = sops.secrets."coturn/static-auth-secret".path;
       realm = "turn.${config.networking.domain}";
@@ -52,6 +54,7 @@ in
 
         # testing
         no-ipv6
+        allowed-peer-ip=159.69.156.206
       '';
     };
 
@@ -83,17 +86,19 @@ in
 
     services.matrix-synapse.settings = {
       turn_uris = with coturn; [
-        "turn:${realm}:${toString listening-port}?transport=udp"
-        "turn:${realm}:${toString listening-port}?transport=tcp"
-        "turn:${realm}:${toString tls-listening-port}?transport=udp"
-        "turn:${realm}:${toString tls-listening-port}?transport=tcp"
-        "turn:${realm}:${toString alt-listening-port}?transport=udp"
-        "turn:${realm}:${toString alt-listening-port}?transport=tcp"
-        "turn:${realm}:${toString alt-tls-listening-port}?transport=udp"
-        "turn:${realm}:${toString alt-tls-listening-port}?transport=tcp"
+        "turn:${realm}?transport=udp"
+        "turn:${realm}?transport=tcp"
+        # "turn:${realm}:${toString listening-port}?transport=udp"
+        # "turn:${realm}:${toString listening-port}?transport=tcp"
+        # "turn:${realm}:${toString tls-listening-port}?transport=udp"
+        # "turn:${realm}:${toString tls-listening-port}?transport=tcp"
+        # "turn:${realm}:${toString alt-listening-port}?transport=udp"
+        # "turn:${realm}:${toString alt-listening-port}?transport=tcp"
+        # "turn:${realm}:${toString alt-tls-listening-port}?transport=udp"
+        # "turn:${realm}:${toString alt-tls-listening-port}?transport=tcp"
       ];
       extraConfigFiles = [ sops.templates."coturn/static-auth-secret.env".path ];
-      turn_user_lifetime = "1h";
+      turn_user_lifetime = "86400000"; # one day
     };
 
     sops =
