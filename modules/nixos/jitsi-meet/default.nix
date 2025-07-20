@@ -36,7 +36,20 @@ in
       hostName = fqdn;
       ngnix.enable = true;
       videobridge.openFirewall = true;
+      # prosody.lockdown = true;
+      # https://github.com/jitsi/jitsi-meet/blob/master/config.js
+      config = {
+        enableWelcomePage = false;
+        prejoinPageEnabled = true;
+        defaultLang = "en";
+      };
+      interfaceConfig = {
+        SHOW_JITSI_WATERMARK = false;
+        SHOW_WATERMARK_FOR_GUESTS = false;
+      };
     };
+
+    services.jitsi-videobridge.openFirewall = true;
 
     services.nginx = mkIf config.services.nginx.enable {
       virtualHosts."${cfg.hostName}" = {
