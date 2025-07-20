@@ -18,7 +18,7 @@
   ];
 
   networking.hostName = "cx22";
-  networking.domain = "sid.koeln";
+  networking.domain = "synapse-test.ovh";
 
   system.stateVersion = "25.05";
 }

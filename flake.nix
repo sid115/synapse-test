@@ -25,6 +25,21 @@
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
     in
     {
+      apps = forAllSystems (
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in
+        {
+          default = self.apps.${system}.rebuild;
+          rebuild = {
+            type = "app";
+            program = pkgs.lib.getExe (pkgs.callPackage ./apps/rebuild { });
+            meta.description = "Rebuild NixOS configuration for cx22.";
+          };
+        }
+      );
+
       packages = forAllSystems (system: import ./pkgs nixpkgs.legacyPackages.${system});
 
       overlays = import ./overlays { inherit inputs; };
