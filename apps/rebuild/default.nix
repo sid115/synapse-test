@@ -12,4 +12,5 @@ symlinkJoin {
   paths = [
     wrapped
   ];
+  meta.mainProgram = "rebuild";
 }

@@ -6,7 +6,7 @@
 }:
 
 let
-  cfg = config.services.grafana;
+  cfg = config.services.jitsi-meet;
   domain = config.networking.domain;
   fqdn = if (cfg.subdomain != "") then "${cfg.subdomain}.${domain}" else domain;
 
@@ -32,10 +32,14 @@ in
   };
 
   config = mkIf cfg.enable {
+    nixpkgs.config.permittedInsecurePackages = [
+      "jitsi-meet-1.0.8043"
+    ];
+
     services.jitsi-meet = {
       hostName = fqdn;
-      ngnix.enable = true;
-      videobridge.openFirewall = true;
+      nginx.enable = true;
+      videobridge.enable = true;
       # prosody.lockdown = true;
       # https://github.com/jitsi/jitsi-meet/blob/master/config.js
       config = {
