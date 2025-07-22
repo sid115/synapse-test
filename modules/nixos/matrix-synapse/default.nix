@@ -6,7 +6,7 @@
 }:
 let
   cfg = config.services.matrix-synapse;
-  fqdn = "${config.networking.domain}";
+  fqdn = config.networking.domain;
   port = 8008; # add a custom option for this?
   baseUrl = "https://${fqdn}";
 
@@ -19,6 +19,10 @@ let
         type = "livekit";
         livekit_service_url = "https://${fqdn}/livekit/jwt/";
       }
+      # {
+      #   type = "nextgen_new_foci_type";
+      #   props_for_nextgen_foci = "val";
+      # }
     ];
   };
   clientConfig = recursiveUpdate baseClientConfig elementCallClientConfig;

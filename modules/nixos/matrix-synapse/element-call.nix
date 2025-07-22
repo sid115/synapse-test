@@ -7,13 +7,33 @@
 
 let
   cfg = config.services.matrix-synapse;
-  fqdn = "${config.networking.domain}";
+  fqdn = config.networking.domain;
   element-call = cfg.element-call;
-  inherit (lib) mkEnableOption mkIf;
+  element-call-config = pkgs.writeTextFile {
+    name = "element-call-config.json";
+    text = builtins.readFile ./element-call-config.json;
+  };
+
+  inherit (lib)
+    mkEnableOption
+    mkIf
+    mkOption
+    types
+    ;
 in
 {
   options.services.matrix-synapse.element-call = {
     enable = mkEnableOption "Enable Element Call backend services and web client.";
+    subdomain = mkOption {
+      type = types.str;
+      default = "call";
+      description = "Subdomain for Nginx virtual host. Cannot be empty."; # TODO: add assertion
+    };
+    forceSSL = mkOption {
+      type = types.bool;
+      default = true;
+      description = "Force SSL for Nginx virtual host.";
+    };
   };
 
   config = mkIf (cfg.enable && element-call.enable) {
@@ -50,26 +70,39 @@ in
       keyFile = config.sops.templates."livekit/keyFile".path;
     };
 
-    services.nginx.virtualHosts."${fqdn}" = {
-      locations."/livekit/jwt/" = {
-        recommendedProxySettings = true;
-        proxyPass = "http://localhost:${toString config.services.lk-jwt-service.port}/";
+    services.nginx.virtualHosts = {
+      "${fqdn}" = {
+        locations."/livekit/jwt/" = {
+          recommendedProxySettings = true;
+          proxyPass = "http://localhost:${toString config.services.lk-jwt-service.port}/";
+        };
+        locations."/livekit/sfu/" = {
+          recommendedProxySettings = true;
+          proxyPass = "http://localhost:${toString config.services.livekit.settings.port}/";
+          extraConfig = ''
+            proxy_send_timeout 120;
+            proxy_read_timeout 120;
+            proxy_buffering off;
+            proxy_set_header Accept-Encoding gzip;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+          '';
+        };
       };
-      locations."/livekit/sfu/" = {
-        recommendedProxySettings = true;
-        proxyPass = "http://localhost:${toString config.services.livekit.settings.port}/";
-        extraConfig = ''
-          proxy_send_timeout 120;
-          proxy_read_timeout 120;
-          proxy_buffering off;
-          proxy_set_header Accept-Encoding gzip;
-          proxy_set_header Upgrade $http_upgrade;
-          proxy_set_header Connection "upgrade";
-        '';
-      };
-      locations."/call/" = {
-        alias = "${pkgs.element-call}/";
-        extraConfig = "try_files $uri $uri/ /call/index.html;";
+      "${element-call.subdomain}.${fqdn}" = {
+        root = pkgs.element-call;
+        enableACME = element-call.forceSSL;
+        forceSSL = element-call.forceSSL;
+        locations."/" = {
+          extraConfig = "try_files $uri /$uri /index.html;";
+        };
+        locations."/public/config.json" = {
+          extraConfig = ''
+            add_header Cache-Control "no-cache, must-revalidate";
+            default_type application/json;
+            return 200 '${element-call-config}';
+          '';
+        };
       };
     };
 
