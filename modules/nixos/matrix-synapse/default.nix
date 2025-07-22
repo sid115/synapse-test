@@ -4,26 +4,41 @@
   pkgs,
   ...
 }:
-
 let
   cfg = config.services.matrix-synapse;
   fqdn = "${config.networking.domain}";
   port = 8008; # add a custom option for this?
   baseUrl = "https://${fqdn}";
-  clientConfig."m.homeserver".base_url = baseUrl;
+
+  baseClientConfig = {
+    "m.homeserver".base_url = baseUrl;
+  };
+  elementCallClientConfig = mkIf cfg.element-call.enable {
+    "org.matrix.msc4143.rtc_foci" = [
+      {
+        type = "livekit";
+        livekit_service_url = "https://${fqdn}/livekit/jwt/";
+      }
+    ];
+  };
+  clientConfig = recursiveUpdate baseClientConfig elementCallClientConfig;
   serverConfig."m.server" = "${fqdn}:443";
+
   mkWellKnown = data: ''
     default_type application/json;
     add_header Access-Control-Allow-Origin *;
+    add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS';
+    add_header Access-Control-Allow-Headers 'X-Requested-With, Content-Type, Authorization';
     return 200 '${builtins.toJSON data}';
   '';
 
-  inherit (lib) mkIf;
+  inherit (lib) mkIf recursiveUpdate;
 in
 {
   imports = [
     ./bridges
     ./coturn.nix
+    ./element-call.nix
   ];
 
   config = mkIf cfg.enable {

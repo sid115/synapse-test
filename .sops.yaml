@@ -1,6 +1,6 @@
 keys:
   - &host_cx22 age14zz02243lgzkzx7mtyr6kxspt7p8qhals3vc9keqc7lgalmjcqkqhuvat8
-  - &user_sid age1vz9t5javpap628fh963gl4ehgkl56f998qf2evqdeqyjht0tkuxsnkr7jd
+  - &user_sid age19yeqvv28fgrtk6jsh3xyaf0lch86kna6rcz4dwe962yyyyevu30sx474xy
 creation_rules:
   - path_regex: hosts/cx22/secrets.yaml$
     key_groups:

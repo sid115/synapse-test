@@ -16,7 +16,10 @@
 
   services = {
     jitsi-meet.enable = true;
-    matrix-synapse.enable = true;
+    matrix-synapse = {
+      enable = true;
+      element-call.enable = true;
+    };
     nginx.enable = true;
   };
 }
