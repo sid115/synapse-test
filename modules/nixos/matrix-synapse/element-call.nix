@@ -9,10 +9,7 @@ let
   cfg = config.services.matrix-synapse;
   fqdn = config.networking.domain;
   element-call = cfg.element-call;
-  element-call-config = pkgs.writeTextFile {
-    name = "element-call-config.json";
-    text = builtins.readFile ./element-call-config.json;
-  };
+  element-call-config = builtins.readFile ./element-call-config.json;
 
   inherit (lib)
     mkEnableOption
