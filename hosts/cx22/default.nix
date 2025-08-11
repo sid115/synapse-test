@@ -6,6 +6,7 @@
 
 {
   imports = [
+    ./authelia.nix
     ./boot.nix
     ./hardware.nix
     ./packages.nix
