@@ -36,7 +36,7 @@ let
     return 200 '${builtins.toJSON data}';
   '';
 
-  inherit (lib) mkIf recursiveUpdate;
+  inherit (lib) mkDefault mkIf recursiveUpdate;
 in
 {
   imports = [
@@ -59,6 +59,8 @@ in
 
     services.matrix-synapse = {
       settings = {
+        enable_registration = mkDefault true;
+        registration_requires_token = mkDefault true;
         registration_shared_secret_path = config.sops.secrets."matrix/registration-shared-secret".path;
         server_name = config.networking.domain;
         public_baseurl = baseUrl;
